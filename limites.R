@@ -1,9 +1,9 @@
 library(cartography)
-load("/media/Data/Dropbox/Thèse/données propres/cartes/IRISPACA.Rdata")
+load("./data/IRISPACA.Rdata")
 
-load("/media/Data/Dropbox/datapackaging/RP2012/data/POP_2012_IRIS.Rdata")
+load("./data/POP_2012_IRIS.Rdata")
 
-load("/media/Data/Dropbox/Thèse/données propres/fisc/RFDUiris20012011.Rdata")
+load("./data/RFDUiris20012011.Rdata")
 
 
 IRISPACAconsolide <- maptools::unionSpatialPolygons(IRISPACA, IDs = IRISPACA@data$DComIris)
