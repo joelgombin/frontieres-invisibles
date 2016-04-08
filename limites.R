@@ -17,7 +17,7 @@ iris_borders <- spTransform(iris_borders, CRSobj = CRS("+init=epsg:4326"))
 
 
 POP_2012_IRIS[POP_2012_IRIS$P12_POP_ETR_pc %in% 0, "P12_POP_ETR_pc"] <- 0.001
-MarseilleOSM <- getTiles(IRISMarseille, type = "stamenwatercolor", crop = TRUE)
+MarseilleOSM <- getTiles(IRISMarseille, type = "stamenwaterbw", crop = TRUE)
 
 
 png("discontinuites_etrangers.png", width = 1200, height = 900)
@@ -29,7 +29,7 @@ tilesLayer(MarseilleOSM)
 choroLayer(spdf = IRISMarseille, df = POP_2012_IRIS, var = "P12_POP_ETR_pc", border = "transparent", col = carto.pal("orange.pal", n1 = 6, transparency = TRUE), method = "equal", nclass = 6, add = TRUE, legend.pos = "left", legend.values.rnd = 2, legend.title.txt = "Étrangers (2012)", legend.title.cex = 1.5, legend.values.cex = 1.5)
 
 
-discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "P12_POP_ETR_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "black", legend.values.rnd = 1, legend.pos = "n", add = TRUE)
+discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "P12_POP_ETR_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "blue", legend.values.rnd = 1, legend.pos = "n", add = TRUE)
 dev.off()
 
 png("discontinuites_cs3.png", width = 1200, height = 900)
@@ -41,7 +41,7 @@ tilesLayer(MarseilleOSM)
 choroLayer(spdf = IRISMarseille, df = POP_2012_IRIS, var = "C12_POP15P_CS3_pc", border = "transparent", col = carto.pal("orange.pal", n1 = 6, transparency = TRUE), method = "equal", nclass = 6, add = TRUE, legend.pos = "left", legend.values.rnd = 2, legend.title.txt = "Cadres et PIS (2012)", legend.title.cex = 1.5, legend.values.cex = 1.5)
 
 
-discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS3_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "black", legend.pos = "n", add = TRUE)
+discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS3_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "blue", legend.pos = "n", add = TRUE)
 dev.off()
 
 png("discontinuites_cs4.png", width = 1200, height = 900)
@@ -53,7 +53,7 @@ tilesLayer(MarseilleOSM)
 choroLayer(spdf = IRISMarseille, df = POP_2012_IRIS, var = "C12_POP15P_CS4_pc", border = "transparent", col = carto.pal("orange.pal", n1 = 6, transparency = TRUE), method = "equal", nclass = 6, add = TRUE, legend.pos = "left", legend.values.rnd = 2, legend.title.txt = "Professions intermédiaires (2012)", legend.title.cex = 1.5, legend.values.cex = 1.5)
 
 
-discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS4_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "black", legend.pos = "n", add = TRUE)
+discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS4_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "blue", legend.pos = "n", add = TRUE)
 dev.off()
 
 png("discontinuites_cs6.png", width = 1200, height = 900)
@@ -65,7 +65,7 @@ tilesLayer(MarseilleOSM)
 choroLayer(spdf = IRISMarseille, df = POP_2012_IRIS, var = "C12_POP15P_CS6_pc", border = "transparent", col = carto.pal("orange.pal", n1 = 6, transparency = TRUE), method = "equal", nclass = 6, add = TRUE, legend.pos = "left", legend.values.rnd = 2, legend.title.txt = "Ouvriers (2012)", legend.title.cex = 1.5, legend.values.cex = 1.5)
 
 
-discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS6_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "black", legend.pos = "n", add = TRUE)
+discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS6_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "blue", legend.pos = "n", add = TRUE)
 dev.off()
 
 png("discontinuites_cs7.png", width = 1200, height = 900)
@@ -77,7 +77,7 @@ tilesLayer(MarseilleOSM)
 choroLayer(spdf = IRISMarseille, df = POP_2012_IRIS, var = "C12_POP15P_CS7_pc", border = "transparent", col = carto.pal("orange.pal", n1 = 6, transparency = TRUE), method = "equal", nclass = 6, add = TRUE, legend.pos = "left", legend.values.rnd = 2, legend.title.txt = "Retraités (2012)", legend.title.cex = 1.5, legend.values.cex = 1.5)
 
 
-discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS7_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "black", legend.pos = "n", add = TRUE)
+discLayer(spdf = iris_borders, df = POP_2012_IRIS, var = "C12_POP15P_CS7_pc", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "blue", legend.pos = "n", add = TRUE)
 dev.off()
 
 png("discontinuites_revenus.png", width = 1200, height = 900)
@@ -89,5 +89,5 @@ tilesLayer(MarseilleOSM)
 choroLayer(spdf = IRISMarseille, df = RFDU2011iris, var = "RFUCQ211", border = "transparent", col = carto.pal("orange.pal", n1 = 6, transparency = TRUE), method = "equal", nclass = 6, add = TRUE, legend.pos = "left", legend.values.rnd = 2, legend.title.txt = "Revenu médian (2011)", legend.title.cex = 1.5, legend.values.cex = 1.5)
 
 
-discLayer(spdf = iris_borders, df = RFDU2011iris, var = "RFUCQ211", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "black", legend.pos = "n", add = TRUE)
+discLayer(spdf = iris_borders, df = RFDU2011iris, var = "RFUCQ211", type = "abs", method = "equal", nclass = 10, threshold = 0.2, sizemin = 0.5, sizemax = 6, col = "blue", legend.pos = "n", add = TRUE)
 dev.off()
