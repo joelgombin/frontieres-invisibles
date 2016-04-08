@@ -17,7 +17,7 @@ iris_borders <- spTransform(iris_borders, CRSobj = CRS("+init=epsg:4326"))
 
 
 POP_2012_IRIS[POP_2012_IRIS$P12_POP_ETR_pc %in% 0, "P12_POP_ETR_pc"] <- 0.001
-MarseilleOSM <- getTiles(IRISMarseille, crop = TRUE)
+MarseilleOSM <- getTiles(IRISMarseille, type = "stamenbw", crop = TRUE)
 
 
 png("discontinuites_etrangers.png", width = 1200, height = 900)
