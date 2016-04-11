@@ -1,0 +1,158 @@
+---
+title: "Frontières intérieures"
+author: "Joël Gombin"
+date: "11 avril 2016"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, cache = TRUE, message = FALSE, warning = FALSE)
+```
+
+
+Il n'y a plus de frontières, déplorent certains. À croire que ça leur manque. Ben, quoi ? Vous n'aimez pas traverser des frontières, vous ?
+
+Laissons les frontières internationales à d'autres. Je ne suis qu'un modeste triturateur de données, qui ne voit pas plus loin que le bout du Frioul. Alors, jetons ensemble un regard (attention, il ne faut pas prendre cette expression au pied de la lettre, ça vous coûterait les yeux de la tête) sur notre bonne ville de Marseille. Et essayons de voir s'il n'y aurait pas là, sous nos yeux, à portée d'excursion, au bout de la ligne de bus, d'authentiques frontières. Tout [marseillologue en herbe](http://marseillologie.net/) sait qu'elle est fragmentée, parcourue de fractures, de fossés, de cicatrices… Le rookie de la marseillologie aura sans doute le réflexe de penser que la principale frontière, le Rio Grande marseillais, passe au travers de la Canebière : n'oppose-t-on pas les Quartiers Nord et les Quartiers Sud ? Kalachnikov-land et Rupin-land ? Le padawan un peu plus avancé dans la vénérable et immémoriale science marseillologique se rappellera toutefois que rien n'est si simple, comme l'ont rappelé récemment [des chercheurs alliés à un journaliste](http://www.metropolitiques.eu/Sociologie-de-Marseille-la-ville.html) ou encore [un journaliste qui a  beaucoup cherché](http://www.go-met.com/philippe-pujol-celui-dit-comprends-marseille/). Marseille est une ville fractale, traversée de fractures à toutes les échelles, ce qui explique qu'elle mette régulièrement en échec les [modèles théoriques](http://www.persee.fr/doc/spgeo_0046-2497_1973_num_2_2_1384) (centre-périphérie, organisation sectorielle...) des sociologues ou géographes qui aiment à penser qu'une ville égale une autre ville. Quoique, à bien y réfléchir, des villes fractales, il doit y en avoir d'autres... (je dis ça, sans quoi la brigade de répression des excès de vitesse marseillologique va me rattraper!). 
+
+Tels des explorateurs du proche, des Magellan des Catalans, des Vasco de Gama du Camas, partons à la recherche des frontières intérieures de la planète Mars(eille). Comment procéder ? Ces frontières intérieures, ces limes ne figurent sur aucune carte officielle ; point de checkpoint Charlie ni de gardes de Frontex pour les identifier.
+Notre méthode est simple. Il s'agit de repérer ces frontières invisibles en regardant là où sont les plus grandes différences, les discontinuités de certaines variables. Si ici il y a beaucoup de cadres et là très peu, on peut considérer qu'il existe entre ici et là une frontière invisible, séparant deux espaces bien distincts. Et plus la différence est forte, plus cette frontière est infranchissable. Techniquement (oui, il faut bien que je fasse semblant d'être technique, à un moment donné…), on prend les IRIS (qui ne sont pas une jolie fleur mais [l'unité de base de diffusion des statistiques publiques](http://www.insee.fr/fr/methodes/default.asp?page=zonages/iris.htm)), et plus la différence de valeur d'une variable donnée entre deux IRIS adjacents est importante, plus on considère qu'il y a à leur limite une discontinuité – ce que j'appelle ici des frontières invisibles.
+
+Les cartes ci-dessous montrent ces frontières lorsqu'on considère quelques variables : la proportion d'étrangers, celle de cadres et professions intellectuelles supérieures, celle de professions intermédiaires, celle d'ouvriers, celle de retraités et enfin les revenus médians. Une partie des frontières invisibles se superposent ; d'autres au contraire sont spécifiques à chaque dimension considérée. À chaque fois, elles dessinent comme un réseau de fortifications invisibles mais bien réelles, qui font que chaque bout de la ville appartient inégalement aux uns et aux autres. Certes, la ville est un bien commun, mais plus ou moins commun pour les uns et les autres… 
+
+
+
+```{r load}
+library(cartography)
+library(rgeos)
+library(maptools)
+library(leaflet)
+load("./data/IRISPACA.Rdata")
+
+load("./data/POP_2012_IRIS.Rdata")
+
+load("./data/RFDUiris20012011.Rdata")
+
+
+IRISPACAconsolide <- unionSpatialPolygons(IRISPACA, IDs = IRISPACA@data$DComIris)
+IRISPACA <- SpatialPolygonsDataFrame(IRISPACAconsolide, data.frame(ID = row.names(IRISPACAconsolide), row.names = row.names(IRISPACAconsolide), stringsAsFactors = FALSE))
+
+IRISMarseille <- IRISPACA[substr(IRISPACA@data$ID, 1, 5) %in% as.character(13201:13216),]
+
+iris_borders <- getBorders(IRISMarseille, "ID")
+IRISMarseille <- spTransform(IRISMarseille, CRSobj = CRS("+init=epsg:4326"))
+iris_borders <- spTransform(iris_borders, CRSobj = CRS("+init=epsg:4326"))
+
+IRISMarseille <- IRISMarseille %>% tmap::append_data(POP_2012_IRIS, key.shp = "ID", key.data = "IRIS")
+```
+
+```{r leaflet1, cache=FALSE}
+iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "P12_POP_ETR_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "P12_POP_ETR_pc"])
+iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
+iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+library(leaflet)
+
+pal <- colorQuantile("Greens", IRISMarseille@data$P12_POP_ETR_pc, n = 10)
+leaflet(data = IRISMarseille) %>% 
+  addProviderTiles("CartoDB.Positron")  %>% 
+  addPolygons(color = ~pal(P12_POP_ETR_pc), stroke = FALSE) %>% 
+  addLegend(position = "bottomleft", pal = pal, values = ~P12_POP_ETR_pc, title = "Étrangers") %>% 
+  addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") 
+
+
+```
+
+
+```{r leaflet2, cache=FALSE}
+iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "C12_POP15P_CS3_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "C12_POP15P_CS3_pc"])
+iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
+iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+library(leaflet)
+
+pal <- colorQuantile("Greens", IRISMarseille@data$C12_POP15P_CS3_pc, n = 10)
+leaflet(data = IRISMarseille) %>% 
+  addProviderTiles("CartoDB.Positron")  %>% 
+  addPolygons(color = ~pal(C12_POP15P_CS3_pc), stroke = FALSE) %>% 
+  addLegend(position = "bottomleft", pal = pal, values = ~C12_POP15P_CS3_pc, title = "Cadres et prof. intell. sup.") %>% 
+  addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") 
+
+```
+
+```{r leaflet3, cache=FALSE}
+iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "C12_POP15P_CS4_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "C12_POP15P_CS4_pc"])
+iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
+iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+library(leaflet)
+
+pal <- colorQuantile("Greens", IRISMarseille@data$C12_POP15P_CS4_pc, n = 10)
+leaflet(data = IRISMarseille) %>% 
+  addProviderTiles("CartoDB.Positron")  %>% 
+  addPolygons(color = ~pal(C12_POP15P_CS4_pc), stroke = FALSE) %>% 
+  addLegend(position = "bottomleft", pal = pal, values = ~C12_POP15P_CS4_pc, title = "Prof. intermédiaires") %>% 
+  addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") 
+
+```
+
+```{r leaflet4, cache=FALSE}
+iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "C12_POP15P_CS6_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "C12_POP15P_CS6_pc"])
+iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
+iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+library(leaflet)
+
+pal <- colorQuantile("Greens", IRISMarseille@data$C12_POP15P_CS6_pc, n = 10)
+leaflet(data = IRISMarseille) %>% 
+  addProviderTiles("CartoDB.Positron")  %>% 
+  addPolygons(color = ~pal(C12_POP15P_CS6_pc), stroke = FALSE) %>% 
+  addLegend(position = "bottomleft", pal = pal, values = ~C12_POP15P_CS6_pc, title = "Ouvriers") %>% 
+  addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") 
+
+```
+
+```{r leaflet5, cache=FALSE}
+iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "C12_POP15P_CS7_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "C12_POP15P_CS7_pc"])
+iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
+iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+library(leaflet)
+
+pal <- colorQuantile("Greens", IRISMarseille@data$C12_POP15P_CS_pc, n = 10)
+leaflet(data = IRISMarseille) %>% 
+  addProviderTiles("CartoDB.Positron")  %>% 
+  addPolygons(color = ~pal(C12_POP15P_CS7_pc), stroke = FALSE) %>% 
+  addLegend(position = "bottomleft", pal = pal, values = ~C12_POP15P_CS7_pc, title = "Retraités") %>% 
+  addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") 
+
+```
+
+```{r leaflet6, cache=FALSE}
+iris_borders@data$ratio <- pmax(RFDU2011iris[match(iris_borders@data$id1, RFDU2011iris$CodeIris), "RFUCQ211"] / RFDU2011iris[match(iris_borders@data$id2, RFDU2011iris$CodeIris), "RFUCQ211"], RFDU2011iris[match(iris_borders@data$id2, RFDU2011iris$CodeIris), "RFUCQ211"] / RFDU2011iris[match(iris_borders@data$id1, RFDU2011iris$CodeIris), "RFUCQ211"], na.rm = TRUE)
+iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
+iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+IRISMarseille@data$RFUCQ211 <- RFDU2011iris[match(IRISMarseille$ID, RFDU2011iris$CodeIris), "RFUCQ211"]
+
+library(leaflet)
+
+pal <- colorNumeric("Greens", IRISMarseille@data$RFUCQ211)
+leaflet(data = IRISMarseille) %>% 
+  addProviderTiles("CartoDB.Positron")  %>% 
+  addPolygons(color = ~pal(RFUCQ211), stroke = FALSE) %>% 
+  addLegend(position = "bottomleft", pal = pal, values = ~RFUCQ211, title = "Revenu médian par unité de consommation", labFormat = labelFormat(suffix = "€")) %>% 
+  addPolylines(data = iris_borders, weight = ~ratio, stroke = TRUE, color = "red") 
+
+```
+
+
+
+Les esprits chagrins ou simplement tatillons (je me compte parmi ceux-là sans aucune honte) noteront que les tracés des frontières dessinées correspondent à ceux des IRIS, c'est-à-dire d'un découpage opéré par l'INSEE, parfois peut-être un peu arbitraire. Peut-être ; encore que les IRIS soient découpés de manière plutôt pertinente par rapport aux réalités des quartiers. Mais l'essentiel est ailleurs : il s'agit de prendre conscience que, là où les cartes traditionnelles (celles qui répondent au doux nom de choroplèthes) nous montrent des à-plats, des dégradés, des continuités, on peut aussi voir des ruptures, des fractures, des frontières, des lignes infranchissables… « La géographie, ça sert à faire la guerre », disait l'autre (enfin, Yves Lacoste). Cette guerre est, aussi, urbaine et sociale…
+
+Sources : [Recensement de la population, INSEE, 2012](http://www.insee.fr/fr/themes/detail.asp?reg_id=99&ref_id=infra-population-12).
+
+[Revenus fiscaux localisés des ménages, DGFiP/INSEE, 2011](http://www.insee.fr/fr/themes/detail.asp?reg_id=99&ref_id=base-cc-rev-fisc-loc-menage)
+
+[Découpage des IRIS, IGN](http://professionnels.ign.fr/contoursiris).
+
+[Code source pour les graphiques](https://github.com/joelgombin/frontieres-invisibles) 
