@@ -1,4 +1,6 @@
 library(cartography)
+library(rgeos)
+library(maptools)
 load("./data/IRISPACA.Rdata")
 
 load("./data/POP_2012_IRIS.Rdata")
@@ -6,12 +8,12 @@ load("./data/POP_2012_IRIS.Rdata")
 load("./data/RFDUiris20012011.Rdata")
 
 
-IRISPACAconsolide <- maptools::unionSpatialPolygons(IRISPACA, IDs = IRISPACA@data$DComIris)
+IRISPACAconsolide <- unionSpatialPolygons(IRISPACA, IDs = IRISPACA@data$DComIris)
 IRISPACA <- SpatialPolygonsDataFrame(IRISPACAconsolide, data.frame(ID = row.names(IRISPACAconsolide), row.names = row.names(IRISPACAconsolide), stringsAsFactors = FALSE))
 
 IRISMarseille <- IRISPACA[substr(IRISPACA@data$ID, 1, 5) %in% as.character(13201:13216),]
 
-iris_borders <- cartography::getBorders(IRISMarseille, "ID")
+iris_borders <- getBorders(IRISMarseille, "ID")
 IRISMarseille <- spTransform(IRISMarseille, CRSobj = CRS("+init=epsg:4326"))
 iris_borders <- spTransform(iris_borders, CRSobj = CRS("+init=epsg:4326"))
 
