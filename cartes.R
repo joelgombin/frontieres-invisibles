@@ -19,9 +19,8 @@ IRISMarseille <- spTransform(IRISMarseille, CRSobj = CRS("+init=epsg:4326"))
 iris_borders <- spTransform(iris_borders, CRSobj = CRS("+init=epsg:4326"))
 
 IRISMarseille <- IRISMarseille %>% tmap::append_data(POP_2012_IRIS, key.shp = "ID", key.data = "IRIS")
-```
 
-```{r leaflet1, cache=FALSE}
+
 iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "P12_POP_ETR_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "P12_POP_ETR_pc"])
 iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
 iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
@@ -33,24 +32,14 @@ leaflet(data = IRISMarseille) %>%
   addProviderTiles("CartoDB.Positron")  %>% 
   addPolygons(color = ~pal(P12_POP_ETR_pc), stroke = FALSE) %>% 
   addLegend(position = "bottomleft", pal = pal, values = ~P12_POP_ETR_pc, title = "Étrangers") %>% 
-  addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") 
-
-iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "C12_POP15P_CS3_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "C12_POP15P_CS3_pc"])
-iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
-iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
-
-
-pal <- colorQuantile("Greens", IRISMarseille@data$C12_POP15P_CS3_pc, n = 10)
-leaflet(data = IRISMarseille) %>% 
-  addProviderTiles("CartoDB.Positron")  %>% 
-  addPolygons(color = ~pal(C12_POP15P_CS3_pc), stroke = FALSE) %>% 
-  addLegend(position = "bottomleft", pal = pal, values = ~C12_POP15P_CS3_pc, title = "Cadres et prof. intell. sup.") %>% 
   addPolylines(data = iris_borders, weight = ~sqrt(ratio), stroke = TRUE, color = "red") %>% 
   htmlwidgets::saveWidget(file = "carte1.html")
 
 iris_borders@data$ratio <- abs(POP_2012_IRIS[match(iris_borders@data$id1, POP_2012_IRIS$IRIS), "C12_POP15P_CS3_pc"] - POP_2012_IRIS[match(iris_borders@data$id2, POP_2012_IRIS$IRIS), "C12_POP15P_CS3_pc"])
 iris_borders@data[is.na(iris_borders@data$ratio), "ratio"] <- 0
 iris_borders@data$ratio <- ifelse(iris_borders@data$ratio > quantile(iris_borders@data$ratio, 0.8, na.rm = TRUE), iris_borders@data$ratio, 0)
+
+
 pal <- colorQuantile("Greens", IRISMarseille@data$C12_POP15P_CS3_pc, n = 10)
 leaflet(data = IRISMarseille) %>% 
   addProviderTiles("CartoDB.Positron")  %>% 
